@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "elementa-component-editor",
+  "version": "${version}",
+
+  "name": "elementa-component-editor",
+  "description": "Simplifies component configuration in Elementa",
+  "authors": [
+    "ChachyDev"
+  ],
+  "contact": {
+    "homepage": "https://github.com/ChachyDev/elementa-component-editor",
+    "sources": "https://github.com/ChachyDev/elementa-component-editor"
+  },
+
+  "license": "LGPL-.30",
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "dev.chachy.editor.debug.ComponentDebugMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.14",
+    "fabric-api": "*",
+    "minecraft": "~1.19.3",
+    "java": ">=17"
+  }
+}
