@@ -5,7 +5,7 @@ import dev.chachy.editor.debug.utils.ScreenUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.minecraft.client.util.InputUtil;
+import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +17,15 @@ public class ComponentDebugMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            LOGGER.info("Development environment detected! Enabling debug mode");
+
+            ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
                 dispatcher.register(ClientCommandManager.literal("component_debug").executes((context) -> {
                     ScreenUtils.INSTANCE.apply(new DebugScreen());
                     return 0;
-                }));
-            }
-        );
+                }))
+            );
+        }
     }
 }
