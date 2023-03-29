@@ -16,21 +16,25 @@ import gg.essential.elementa.dsl.pixels
 import gg.essential.elementa.effects.OutlineEffect
 import gg.essential.elementa.state.BasicState
 import java.awt.Color
+import java.time.Duration
 
 class ComponentEditor(
     base: UIComponent,
     private val window: Window,
-    initialConstraints: UIConstraints.() -> Unit,
-    notifiers: List<SaveNotifier> = listOf(),
+    saveNotifiers: List<SaveNotifier> = listOf(),
     outlineColor: Color = Color.CYAN.darker().darker(),
     outlineWidth: Float = 2f,
     markerOutlineColor: Color = Color.CYAN.darker().darker(),
-    markerOutlineColorWidth: Float = 2f
+    markerOutlineColorWidth: Float = 2f,
+    initialConstraints: UIConstraints.() -> Unit
 ) : UIContainer() {
     private var isMouseDragging = false
 
     private var dragOffsetX = 0f
     private var dragOffsetY = 0f
+
+    private var clickCount = 0
+    private var lastClick = 0L
 
     private var isDragging = false
     private var dragStartX = 0f
@@ -66,6 +70,26 @@ class ComponentEditor(
 
         component = base.constrain(initialConstraints)
             .onMouseClick { event ->
+                clickCount++
+
+                if (clickCount == 2) {
+                    if ((System.nanoTime() - lastClick) <= Duration.ofSeconds(1).toNanos()) {
+                        wrapper.setX(CenterConstraint())
+                        wrapper.setY(CenterConstraint())
+
+                        val constraints = UIConstraints(base)
+                        initialConstraints(constraints)
+                        base.constraints = constraints
+
+                        clickCount = 0
+                        return@onMouseClick
+                    }
+
+                    clickCount = 0
+                }
+
+                lastClick = System.nanoTime()
+
                 isMouseDragging = true
 
                 dragOffsetX = event.absoluteX
@@ -90,10 +114,16 @@ class ComponentEditor(
                 val newPosX = getLeft() + deltaX
                 val newPosY = getTop() + deltaY
 
+                val relativeX = newPosX / window.getWidth()
+                val relativeY = newPosY / window.getHeight()
 
-                wrapper.setX(RelativeConstraint(newPosX / window.getWidth()))
-                wrapper.setY(RelativeConstraint(newPosY / window.getHeight()))
-                notifiers.notifyChange()
+                if (relativeX < 0 || relativeY < 0 || relativeX > 0.8 || relativeY > 0.8) {
+                    return@onMouseDrag
+                }
+
+                wrapper.setX(RelativeConstraint(relativeX))
+                wrapper.setY(RelativeConstraint(relativeY))
+                saveNotifiers.notifyChange()
             }.onMouseEnter {
                 enableEffect(outline)
             }.onMouseLeave {
@@ -131,7 +161,7 @@ class ComponentEditor(
 
                 component.setWidth(newWidth.pixels)
                 component.setHeight(newHeight.pixels)
-                notifiers.notifyChange()
+                saveNotifiers.notifyChange()
             }
         }.onMouseRelease {
             isDragging = false
