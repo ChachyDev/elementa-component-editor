@@ -1,6 +1,5 @@
 plugins {
     id "fabric-loom" version "1.1-SNAPSHOT"
-    id "maven-publish"
     id "org.jetbrains.kotlin.jvm" version "1.8.10"
 }
 
@@ -45,20 +44,5 @@ loom {
         named("client") {
             ideConfigGenerated = true
         }
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
     }
 }
